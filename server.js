@@ -77,10 +77,11 @@ app.get('/api/users/:_id/logs', async(req, res)=>{
             const fromDate = new Date(from)
             log = log.filter(entry => entry.date >= fromDate)
         }
-        if(to){
-           const fromDate = new Date(from)
-           log = log.filter(entry => entry.date >= fromDate) 
-        }
+        if (to) {
+            const toDate = new Date(to);
+            log = log.filter(entry => entry.date <= toDate);
+}
+
         if(limit){
             log = log.slice(0, parseInt(limit))
         }
@@ -107,7 +108,7 @@ app.get('/api/users/:_id/logs', async(req, res)=>{
 
 app.get('/api/users', async(req, res)=>{
     try {
-        const users = await User.find({}, '_id username')
+        const users = await User.find({}, '_id username').lean()
         res.json(users)
     } catch (error) {
         console.error('❌ Error fetching users:', error)
