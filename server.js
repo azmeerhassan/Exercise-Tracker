@@ -34,5 +34,34 @@ app.post('/api/users', async(req, res)=>{
     }
 })
 
+app.post('/api/users/:_id/exercises', async(req, res)=>{
+    const { description, duration, date} = req.body
+    const userId = req.params._id
+
+    try {
+        const user = await User.findById(userId)
+        if(!user) return res.json({error: 'User not found'})
+        
+        const exercise = {
+            description,
+            duration: parseInt(duration),
+            date: date ? new Date(date) : new Date(),
+        }
+        user.log.push(exercise)
+        await user.save()
+
+        res.json({
+            _id: user._id,
+            username: user.username,
+            date: exercise.date.toDateString(),
+            duration: exercise.duration,
+            description: exercise.description,
+        })
+    } catch (error) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+})
+
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
