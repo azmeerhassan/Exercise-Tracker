@@ -63,5 +63,57 @@ app.post('/api/users/:_id/exercises', async(req, res)=>{
     }
 })
 
+app.get('/api/users/:_id/logs', async(req, res)=>{
+    const { _id } = req.params
+    const { from, to, limit } = req.query
+
+    try {
+        const user = await User.findById(_id)
+        if(!user) return res.json({error: 'User not found'})
+
+        let log = [...user.log]
+        
+        if(from){
+            const fromDate = new Date(from)
+            log = log.filter(entry => entry.date >= fromDate)
+        }
+        if(to){
+           const fromDate = new Date(from)
+           log = log.filter(entry => entry.date >= fromDate) 
+        }
+        if(limit){
+            log = log.slice(0, parseInt(limit))
+        }
+
+        const formattedLog = log.map(entry => ({
+            description: entry.description,
+            duration: entry.duration,
+            date: entry.date.toDateString()
+        }))
+        res.json({
+            _id: user._id,
+            username: user.username,
+            count: log.length,
+            log: formattedLog
+        })
+
+
+    } catch (error) {
+        console.error('❌ Error fetching logs:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+
+})
+
+app.get('/api/users', async(req, res)=>{
+    try {
+        const users = await User.find({}, '_id username')
+        res.json(users)
+    } catch (error) {
+        console.error('❌ Error fetching users:', error)
+        res.status(500).json({ error: 'Server error' });
+    }
+})
+
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
